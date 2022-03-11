@@ -18,53 +18,14 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ template "apache-nifi.fullname" . }}
-  labels:
-    app: {{ include "apache-nifi.name" . | quote }}
-    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
-    release: {{ .Release.Name | quote }}
-    heritage: {{ .Release.Service | quote }}
-{{- if .Values.service.annotations }}
-  annotations:
-{{ toYaml .Values.service.annotations | indent 4 }}
-{{- end }}
+  name: apache-nifi
 spec:
-  type: {{ .Values.service.type }}
-  {{- if .Values.service.loadBalancerIP }}
-  loadBalancerIP: {{ .Values.service.loadBalancerIP }}
-  {{- end }}
-  {{- if .Values.service.loadBalancerSourceRanges }}
-  loadBalancerSourceRanges:
-{{ with .Values.service.loadBalancerSourceRanges }}
-{{ toYaml . | indent 4 }}
-  {{- end }}
-  {{- end }}
-  {{- if .Values.service.sessionAffinity }}
-  sessionAffinity: {{ .Values.service.sessionAffinity }}
-  {{- end }}
-  {{- if .Values.service.sessionAffinityConfig }}
-  sessionAffinityConfig:
-{{- with .Values.service.sessionAffinityConfig }}
-{{ toYaml . | indent 4 }}
-  {{- end }}
-  {{- end }}
+  type: ClusterIP
   ports:
-    - port: {{ .Values.service.httpPort }}
-      name: http
-      targetPort: {{ .Values.properties.httpPort }}
-      nodePort: {{ .Values.service.nodePort }}
-{{- if .Values.service.processors.enabled }}
-{{- with .Values.service.processors.ports  }}
-{{- range . }}
-    - port: {{ .port }}
-      name: {{ .name }}
-      targetPort: {{ .targetPort }}
-      {{- if eq $.Values.service.type "NodePort" }}
-      nodePort: {{ .nodePort }}
-      {{- end }}
-{{- end }}
-{{- end }}
-{{- end }}
+    - protocol: TCP
+      port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.port }}
+      name: nifi
   selector:
     app: {{ template "apache-nifi.name" . }}
     release: {{ .Release.Name }}
